@@ -28,7 +28,7 @@ class TT7000:
         self.serial.write(f'SYST:MODE {mode.value}\n'.encode('ascii'))
         self._expect_ok()
 
-    def set_output_on(self, on: bool = True):
+    def enable_output(self, on: bool = True):
         on = 'ON' if on else 'OFF'
         self.serial.write(f'OUTP:STAT {on}\n'.encode('ascii'))
 
@@ -40,9 +40,13 @@ class TT7000:
         resp = self.serial.readline()
         logger.debug(f'[>] read power: {resp}')
         if m := READ_POWER_RE.match(resp.decode('ascii')):
-            return m[1]
+            return float(m[1])
         else:
             raise TT7000Error(f'did a `POWER:READ?` but got an unparsable response: `{resp}`')
+
+    def enable_buzzer(self, on: bool = True):
+        on = 'ON' if on else 'OFF'
+        self.serial.write(f'*BUZZER {on}\n'.encode('ascii'))
 
     def close(self):
         self.serial.close()
